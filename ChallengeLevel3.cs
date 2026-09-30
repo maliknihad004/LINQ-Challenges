@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 class Product
@@ -23,33 +24,49 @@ class LevelThree
             new Product { Id = 5, Name = "Phone", Category = "Electronics", Price = 800, Stock = 0 }
         };
 
-        var expensiveProducts = products.Where(product => product.Stock > 0)
-                                        .OrderByDescending(product => product.Price)
-                                        .Take(3)
-                                        .Select(product => new { product.Name, product.Price });
+        var expensiveProducts = products
+            .Where(product => product.Stock > 0)
+            .OrderByDescending(product => product.Price)
+            .Take(3)
+            .Select(product => new
+            {
+                product.Name,
+                product.Price
+            });
 
-        Console.WriteLine("Top 3 most expensive products:");
+        Console.WriteLine("Top 3 most expensive products in stock:");
 
         foreach (var product in expensiveProducts)
         {
             Console.WriteLine($"{product.Name}: ${product.Price}");
         }
 
-        var productInformation = products.GroupBy(product => product.Category)
-                                          .Select(group => new
-                                          {
-                                              categoryName = group.Key,
-                                              numberOfProducts = group.Count(),
-                                              averagePrice = group.Average(product => product.Price),
-                                              mostExpensivePrice = group.Max(product => product.Price)
-                                          })
-                                          .OrderByDescending(group => group.averagePrice);
+        Console.WriteLine();
+
+        var productInformation = products
+            .GroupBy(product => product.Category)
+            .Select(group => new
+            {
+                CategoryName = group.Key,
+                NumberOfProducts = group.Count(),
+                AveragePrice = group.Average(product => product.Price),
+                MostExpensiveProduct = group
+                    .OrderByDescending(product => product.Price)
+                    .First()
+            })
+            .OrderByDescending(group => group.AveragePrice);
 
         Console.WriteLine("Product information by category:");
 
         foreach (var group in productInformation)
         {
-            Console.WriteLine($"Category: {group.categoryName}, Products: {group.numberOfProducts}, Average Price: ${group.averagePrice}, Most Expensive: ${group.mostExpensivePrice}");
+            Console.WriteLine(
+                $"Category: {group.CategoryName}, " +
+                $"Products: {group.NumberOfProducts}, " +
+                $"Average Price: ${group.AveragePrice:F2}, " +
+                $"Most Expensive: {group.MostExpensiveProduct.Name} " +
+                $"(${group.MostExpensiveProduct.Price})"
+            );
         }
     }
 }
